@@ -1,0 +1,6 @@
+{
+  "name": "Gestión Fábrica Muebles",
+  "description": "Aplicación móvil para el seguimiento y control centralizado del proceso de producción de muebles por etapas, con alertas visuales de tiempos y registro fotográfico local.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
