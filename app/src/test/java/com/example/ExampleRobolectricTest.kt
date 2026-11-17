@@ -97,4 +97,19 @@ class ExampleRobolectricTest {
         assertEquals(ProductionStage.CORTE, lastAdvance.toStage)
         assertTrue("Debe registrar retraso al superar 24h", lastAdvance.wasDelayed)
     }
+
+    @Test
+    fun `play store update manager starts idle and handles dismiss cleanly`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val manager = com.example.update.PlayStoreUpdateManager(context)
+
+        assertEquals(com.example.update.UpdateUiState.Idle, manager.updateState.value)
+        assertFalse(manager.isBannerDismissed.value)
+
+        manager.dismissBanner()
+        assertTrue(manager.isBannerDismissed.value)
+
+        manager.clearManualStatus()
+        assertEquals(com.example.update.UpdateUiState.Idle, manager.updateState.value)
+    }
 }

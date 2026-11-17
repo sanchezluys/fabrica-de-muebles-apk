@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">Gestión Fábrica Muebles</string>
+    <string name="update_available_title">Actualización disponible en Play Store</string>
+    <string name="update_available_message">Hay una nueva versión disponible (código %1$d) con mejoras para tu taller.</string>
+    <string name="update_action_now">Actualizar</string>
+    <string name="update_action_later">Más tarde</string>
+    <string name="update_downloading_message">Descargando actualización (%1$d%%)…</string>
+    <string name="update_downloaded_title">Actualización lista para instalar</string>
+    <string name="update_downloaded_message">Reinicia la aplicación para completar la actualización.</string>
+    <string name="update_action_restart">Reiniciar</string>
+    <string name="update_check_button">Buscar actualizaciones en Play Store</string>
+    <string name="update_checking_message">Consultando Google Play Store…</string>
+    <string name="update_up_to_date_message">Ya cuentas con la última versión instalada.</string>
+    <string name="update_unavailable_message">No se pudo verificar con Play Store desde esta instalación local.</string>
 </resources>

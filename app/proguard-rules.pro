@@ -12,10 +12,6 @@
 #   public *;
 #}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
-
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Preserve line numbers for Play Console mapping deobfuscation without leaking local source paths
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile

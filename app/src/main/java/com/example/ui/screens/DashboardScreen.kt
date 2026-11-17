@@ -9,10 +9,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -53,9 +55,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.ProductionStage
 import com.example.ui.components.OfflineIndicatorBanner
+import com.example.ui.components.PlayStoreUpdateBanner
 import com.example.ui.components.StageBadge
+import com.example.update.UpdateUiState
 import com.example.viewmodel.OrderAlertItem
 import com.example.viewmodel.ProductionViewModel
+import com.google.android.play.core.appupdate.AppUpdateInfo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,12 +70,18 @@ fun DashboardScreen(
     onNavigateToDetail: (Long) -> Unit,
     onNavigateToCreate: () -> Unit,
     onNavigateToAdvance: (Long) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    updateState: UpdateUiState = UpdateUiState.Idle,
+    isUpdateBannerDismissed: Boolean = false,
+    onStartUpdate: (AppUpdateInfo, Boolean) -> Unit = { _, _ -> },
+    onCompleteUpdate: () -> Unit = {},
+    onDismissUpdateBanner: () -> Unit = {}
 ) {
     val state by viewModel.dashboardState.collectAsState()
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             TopAppBar(
                 title = {
@@ -115,6 +126,22 @@ fun DashboardScreen(
             // Mandatory Offline Banner
             item {
                 OfflineIndicatorBanner()
+            }
+
+            // Google Play Store Update Notification Banner
+            if (updateState is UpdateUiState.UpdateAvailable && !isUpdateBannerDismissed ||
+                updateState is UpdateUiState.Downloading ||
+                updateState is UpdateUiState.Downloaded
+            ) {
+                item {
+                    PlayStoreUpdateBanner(
+                        updateState = updateState,
+                        isDismissed = isUpdateBannerDismissed,
+                        onStartUpdate = onStartUpdate,
+                        onCompleteUpdate = onCompleteUpdate,
+                        onDismiss = onDismissUpdateBanner
+                    )
+                }
             }
 
             // Metric Summary Cards

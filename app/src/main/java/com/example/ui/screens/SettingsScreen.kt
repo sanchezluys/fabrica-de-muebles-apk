@@ -7,10 +7,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,6 +23,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -48,20 +51,31 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.BuildConfig
+import com.example.R
 import com.example.data.model.ProductionStage
 import com.example.data.model.StageConfig
 import com.example.ui.components.OfflineIndicatorBanner
+import com.example.ui.components.PlayStoreUpdateBanner
 import com.example.ui.components.StageBadge
+import com.example.update.UpdateUiState
 import com.example.viewmodel.ProductionViewModel
+import com.google.android.play.core.appupdate.AppUpdateInfo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     viewModel: ProductionViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    updateState: UpdateUiState = UpdateUiState.Idle,
+    onStartUpdate: (AppUpdateInfo, Boolean) -> Unit = { _, _ -> },
+    onCompleteUpdate: () -> Unit = {},
+    onCheckForUpdates: () -> Unit = {},
+    onClearUpdateFeedback: () -> Unit = {}
 ) {
     val configs by viewModel.stageConfigs.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -86,6 +100,7 @@ fun SettingsScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        contentWindowInsets = WindowInsets.safeDrawing,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
@@ -290,33 +305,87 @@ fun SettingsScreen(
                 }
             }
 
-            // App info card
+            // App info & Play Store updates card
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
                 ) {
-                    Row(
+                    Column(
                         modifier = Modifier.padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Info,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.outline
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.outline
+                            )
+                            Column {
+                                Text(
+                                    text = "Gestión Fábrica Muebles • v${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
+                                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
+                                )
+                                Text(
+                                    text = "Desarrollado para sanchezluys@gmail.com • Android 16 (API 36)",
+                                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                                    color = MaterialTheme.colorScheme.outline
+                                )
+                            }
+                        }
+
+                        PlayStoreUpdateBanner(
+                            updateState = updateState,
+                            isDismissed = false,
+                            onStartUpdate = onStartUpdate,
+                            onCompleteUpdate = onCompleteUpdate,
+                            onDismiss = onClearUpdateFeedback
                         )
-                        Column {
-                            Text(
-                                text = "Gestión Fábrica Muebles",
-                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
+
+                        when (updateState) {
+                            is UpdateUiState.Checking -> {
+                                Text(
+                                    text = stringResource(R.string.update_checking_message),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                            is UpdateUiState.UpToDate -> {
+                                Text(
+                                    text = stringResource(R.string.update_up_to_date_message),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color(0xFF15803D)
+                                )
+                            }
+                            is UpdateUiState.Unavailable -> {
+                                Text(
+                                    text = stringResource(R.string.update_unavailable_message),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            else -> Unit
+                        }
+
+                        OutlinedButton(
+                            onClick = onCheckForUpdates,
+                            enabled = updateState !is UpdateUiState.Checking,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("btn_check_play_updates"),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.SystemUpdate,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
                             )
-                            Text(
-                                text = "Desarrollado para sanchezluys@gmail.com • Android 16 (API 36)",
-                                style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
-                                color = MaterialTheme.colorScheme.outline
-                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(stringResource(R.string.update_check_button))
                         }
                     }
                 }
