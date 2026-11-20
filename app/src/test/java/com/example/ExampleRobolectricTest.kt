@@ -18,6 +18,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
@@ -111,5 +112,12 @@ class ExampleRobolectricTest {
 
         manager.clearManualStatus()
         assertEquals(com.example.update.UpdateUiState.Idle, manager.updateState.value)
+    }
+
+    @Test
+    fun `main activity configures edge-to-edge and disables nav bar contrast scrim on api 36`() {
+        val activity = Robolectric.buildActivity(MainActivity::class.java).setup().get()
+        assertNotNull(activity.window)
+        assertFalse(activity.window.isNavigationBarContrastEnforced)
     }
 }

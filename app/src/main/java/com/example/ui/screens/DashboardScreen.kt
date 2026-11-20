@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -49,6 +52,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -116,11 +120,17 @@ fun DashboardScreen(
             }
         }
     ) { innerPadding ->
+        val layoutDirection = LocalLayoutDirection.current
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
-            contentPadding = PaddingValues(16.dp),
+                .consumeWindowInsets(innerPadding),
+            contentPadding = PaddingValues(
+                start = innerPadding.calculateStartPadding(layoutDirection) + 16.dp,
+                top = innerPadding.calculateTopPadding() + 16.dp,
+                end = innerPadding.calculateEndPadding(layoutDirection) + 16.dp,
+                bottom = innerPadding.calculateBottomPadding() + 80.dp
+            ),
             verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
             // Mandatory Offline Banner
@@ -287,11 +297,6 @@ fun DashboardScreen(
                         )
                     }
                 }
-            }
-
-            // Spacer for FAB visibility
-            item {
-                Spacer(modifier = Modifier.height(60.dp))
             }
         }
     }
